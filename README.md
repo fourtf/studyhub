@@ -2,9 +2,9 @@
 
 ## How to run
 
-- Install [https://yarnpkg.com/](yarn).
-- Install [https://nodejs.org/en/](nodejs).
-- Install [https://golang.org/](go).
+- Install [yarn](https://yarnpkg.com/).
+- Install [nodejs](https://nodejs.org/en/).
+- Install [go](https://golang.org/).
 - In the `frontend` directory:
     - Run `yarn` to install dependencies.
     - Then you can run using `yarn start`.
