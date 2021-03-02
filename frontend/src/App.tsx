@@ -1,19 +1,21 @@
-import { AppBar, Toolbar, Typography } from '@material-ui/core';
-import React from 'react';
 import './App.css';
-import LoginDialog from './components/LoginDialog';
-import RegisterDialog from './components/RegisterDialog';
+import Quizzes from './pages/Quizzes';
+import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
+import Home from 'pages/Home';
+import NotFound from 'pages/NotFound';
+import Quiz from 'pages/Quiz';
 
 function App() {
   return (
     <div className="App">
-      <AppBar>
-        <Toolbar>
-          <Typography variant="h6">StudyHub</Typography>
-          <LoginDialog />
-          <RegisterDialog />
-        </Toolbar>
-      </AppBar>
+      <Router>
+        <Switch>
+          <Route path="/" exact component={Home} />
+          <Route path="/quizzes" exact component={Quizzes} />
+          <Route path="/quizzes/:id" exact component={Quiz} />
+          <Route component={NotFound} />
+        </Switch>
+      </Router>
     </div>
   );
 }
