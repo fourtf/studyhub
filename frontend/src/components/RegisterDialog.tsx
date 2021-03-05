@@ -4,8 +4,7 @@ import { DialogTitle } from '@material-ui/core';
 import { DialogContent } from '@material-ui/core';
 import { Dialog } from '@material-ui/core';
 import { Button } from '@material-ui/core';
-import { SettingsInputAntennaTwoTone } from '@material-ui/icons';
-import React, { ChangeEvent, FormEvent } from 'react';
+import React, { ChangeEvent } from 'react';
 import { useState } from 'react';
 
 function RegisterDialog() {
@@ -19,7 +18,7 @@ function RegisterDialog() {
   };
 
   const [input, setInput] = useState({
-    username: "",
+    name: "",
     email: "",
     password: ""
   })
@@ -32,8 +31,7 @@ function RegisterDialog() {
 
   const requestOptions = {
     method: "POST",
-    headers: {'Content-Type': 'application/json',
-              'Access-Control-Allow-Origin': 'http://localhost:3001'},
+    headers: {'Content-Type': 'application/json'},
     body: JSON.stringify(input)
   }
   const onSubmit = async() => {
@@ -52,16 +50,16 @@ function RegisterDialog() {
         onClose={handleClose}
         aria-labelledby="login-dialog-title"
       >
-        <DialogTitle id="login-dialog-title">Login</DialogTitle>
+        <DialogTitle id="login-dialog-title">Register</DialogTitle>
         <DialogContent>
           <div>
             <TextField
-              id="username"
+              id="name"
               label="Username"
               type="text"
               required
               autoFocus
-              value={input.username}
+              value={input.name}
               onChange={handleInputChange}
             />
           </div>
