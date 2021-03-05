@@ -28,19 +28,21 @@ func (creatingStorer CreatingUserStorer) Load(_ context.Context, username string
 
 func (creatingStorer CreatingUserStorer) Save(_ context.Context, user authboss.User) error {
 	u := user.(*User)
-	_, err := creatingStorer.Database.Exec(`UPDATE users SET name = $1, email = $2, password = $3 WHERE id = $4`, u.ID, u.Username, u.Email, u.Password, u.ID)
+	_, err := creatingStorer.Database.Exec(`UPDATE users SET name = $1, email = $2, password = $3 WHERE id = $4`, u.ID, u.Username, "email", u.Password, u.ID)
 	return err
 }
 
-func (creatingStorer CreatingUserStorer) New(_ context.Context) authboss.User {
+func (creatingStorer CreatingUserStorer) New(ctx context.Context) authboss.User {
+	log.Println("New User")
 	return &User{}
 }
 
 func (creatingStorer CreatingUserStorer) Create(ctx context.Context, user authboss.User) error {
 	u := user.(*User)
-	err := creatingStorer.Database.QueryRow(`INSERT INTO users (name, email, password) VALUES($1, $2, $3)`, u.Username, u.Email, u.Password)
+	err := creatingStorer.Database.QueryRow(`INSERT INTO users (name, email, password) VALUES($1, $2, $3)`, u.Username, "email", u.Password)
 	if err != nil {
 		return authboss.ErrUserFound
 	}
+	log.Println("Created new User")
 	return nil
 }
