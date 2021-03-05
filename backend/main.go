@@ -3,7 +3,6 @@ package main
 import (
 	"database/sql"
 	"encoding/base64"
-	"flag"
 	"log"
 	"net/http"
 	"regexp"
@@ -14,17 +13,12 @@ import (
 	"github.com/go-chi/chi/middleware"
 	"github.com/gorilla/schema"
 	"github.com/gorilla/sessions"
+	"github.com/justinas/nosurf"
+	_ "github.com/lib/pq"
 	abclientstate "github.com/volatiletech/authboss-clientstate"
 	"github.com/volatiletech/authboss/v3"
 	"github.com/volatiletech/authboss/v3/defaults"
 	"github.com/volatiletech/authboss/v3/remember"
-)
-
-var (
-	flagDebug    = flag.Bool("debug", false, "output debugging information")
-	flagDebugDB  = flag.Bool("debugdb", false, "output database on each request")
-	flagDebugCTX = flag.Bool("debugctx", false, "output specific authboss related context keys on each request")
-	flagAPI      = flag.Bool("api", false, "configure the app to be an api instead of an html app")
 )
 
 var (
@@ -111,9 +105,30 @@ func setupRouter() {
 
 	router := chi.NewRouter()
 
-	router.Use(middleware.Logger, ab.LoadClientStateMiddleware, remember.Middleware(ab))
+	//Remove in production
+	router.Use(corsMiddleware)
 
-	router.Mount("/auth", http.StripPrefix("/auth", ab.Core.Router))
+	router.Use(middleware.Logger, nosurfing, ab.LoadClientStateMiddleware, remember.Middleware(ab))
+
+	router.Group(func(router chi.Router) {
+		router.Use(authboss.ModuleListMiddleware(ab))
+		router.Mount("/auth", http.StripPrefix("/auth", ab.Core.Router))
+	})
+
+	// In order to have a "proper" API with csrf protection we allow
+	// the options request to return the csrf token that's required to complete the request
+	// when using post
+	optionsHandler := func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("X-CSRF-TOKEN", nosurf.Token(r))
+		w.WriteHeader(http.StatusOK)
+	}
+	// We have to add each of the authboss get/post routes specifically because
+	// chi sees the 'Mount' above as overriding the '/*' pattern.
+	routes := []string{"register"}
+	router.MethodFunc("OPTIONS", "/*", optionsHandler)
+	for _, r := range routes {
+		router.MethodFunc("OPTIONS", "/auth/"+r, optionsHandler)
+	}
 
 	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("welcome"))
@@ -129,4 +144,23 @@ func setupRouter() {
 	}
 
 	srv.ListenAndServe()
+}
+
+func nosurfing(h http.Handler) http.Handler {
+	surfing := nosurf.New(h)
+	surfing.SetFailureHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log.Println("Failed to validate CSRF token:", nosurf.Reason(r))
+		w.WriteHeader(http.StatusBadRequest)
+	}))
+	return surfing
+}
+
+func corsMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Credentials", "true")
+		w.Header().Set("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT")
+		w.Header().Set("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers")
+		next.ServeHTTP(w, r)
+	})
 }
