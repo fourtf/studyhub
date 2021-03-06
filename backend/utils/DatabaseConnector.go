@@ -1,19 +1,29 @@
 package utils
 
 import (
+	"fmt"
 	"log"
+	"os"
 
 	"github.com/fourtf/studyhub/models"
 	"github.com/jinzhu/gorm"
-	_ "github.com/lib/pq"
+
+	//Needed to use the postgres driver
+	_ "github.com/jinzhu/gorm/dialects/postgres"
 )
 
 //ConnectToDB establishes a connection to the database and handles errors if the database is not available
 func ConnectToDB() *gorm.DB {
+	LoadEnvironmentVariables()
 
-	connectionString := "user=postgres dbname=postgres password=studyhub_dev sslmode=disable"
+	username := os.Getenv("databaseUser")
+	password := os.Getenv("databasePassword")
+	databaseName := os.Getenv("databaseName")
+	databaseType := os.Getenv("databaseType")
 
-	db, err := gorm.Open("postgres", connectionString)
+	connectionString := fmt.Sprintf("user=%s dbname=%s password=%s sslmode=disable", username, databaseName, password)
+
+	db, err := gorm.Open(databaseType, connectionString)
 
 	if err != nil {
 		log.Println("error", err)

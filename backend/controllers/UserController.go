@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -41,26 +42,26 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	user := &models.User{}
 	err := json.NewDecoder(r.Body).Decode(user)
 	if err != nil {
-		var resp = map[string]interface{}{"status": false, "message": "Invalid request"}
+		var resp = map[string]interface{}{"message": "Invalid request"}
 		json.NewEncoder(w).Encode(resp)
 		return
 	}
-	resp := findOne(user.Email, user.Password)
+	resp := findOne(user.Name, user.Password)
 	json.NewEncoder(w).Encode(resp)
 }
 
-func findOne(email, password string) map[string]interface{} {
+func findOne(name, password string) map[string]interface{} {
 	user := &models.User{}
 
-	if err := db.Where("Email = ?", email).First(user).Error; err != nil {
-		var resp = map[string]interface{}{"status": false, "message": "Email address not found"}
+	if err := db.Where("Name = ?", name).First(user).Error; err != nil {
+		var resp = map[string]interface{}{"message": "User not found"}
 		return resp
 	}
 	expiresAt := time.Now().Add(time.Minute * 100000).Unix()
 
 	errf := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 	if errf != nil && errf == bcrypt.ErrMismatchedHashAndPassword { //Password does not match!
-		var resp = map[string]interface{}{"status": false, "message": "Invalid login credentials. Please try again"}
+		var resp = map[string]interface{}{"message": "Invalid login credentials. Please try again"}
 		return resp
 	}
 
@@ -74,15 +75,13 @@ func findOne(email, password string) map[string]interface{} {
 	}
 
 	token := jwt.NewWithClaims(jwt.GetSigningMethod("HS256"), tk.StandardClaims)
-
-	//TODO: Random string as token generation secret
-	tokenString, error := token.SignedString([]byte("secret"))
+	utils.LoadEnvironmentVariables()
+	tokenString, error := token.SignedString([]byte(os.Getenv("tokenSigningKey")))
 	if error != nil {
 		fmt.Println(error)
 	}
 
-	var resp = map[string]interface{}{"status": false, "message": "logged in"}
-	resp["token"] = tokenString //Store the token in the response
-	resp["user"] = user
+	var resp = map[string]interface{}{"message": "logged in"}
+	resp["Token"] = tokenString //Store the token in the response
 	return resp
 }

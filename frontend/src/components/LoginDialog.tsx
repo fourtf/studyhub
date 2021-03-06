@@ -1,8 +1,10 @@
 import { DialogActions, DialogContent, DialogTitle } from '@material-ui/core';
 import { TextField } from '@material-ui/core';
 import { Button, Dialog } from '@material-ui/core';
-import React from 'react';
+import { TokenResponse } from 'models/Token';
+import React, { ChangeEvent } from 'react';
 import { useState } from 'react';
+import { fetchPublic } from 'utils/FetchUtils';
 
 function LoginDialog() {
   const [open, setOpen] = useState(false);
@@ -13,6 +15,34 @@ function LoginDialog() {
 
   const handleClose = () => {
     setOpen(false);
+  };
+
+  const [input, setInput] = useState({
+    name: '',
+    password: '',
+  });
+
+  const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const value = event.currentTarget.value;
+    setInput({
+      ...input,
+      [event.currentTarget.id]: value,
+    });
+  };
+
+  const requestOptions: RequestInit = {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  };
+
+  const onSubmit = async () => {
+    const responseBody = await fetchPublic('http://localhost:3001/login', requestOptions)
+    const { token } = responseBody as TokenResponse;
+    let date = new Date();
+    date.setTime(date.getTime() + 365 * 24 * 60 * 60 * 1000); //expires in one year
+    document.cookie = `studyhub_token=${token}; expires=${date.toUTCString()}; secure`;
+    setOpen(false)
   };
 
   return (
@@ -29,11 +59,13 @@ function LoginDialog() {
         <DialogContent>
           <div>
             <TextField
-              id="username"
+              id="name"
               label="Username"
               type="text"
               required
               autoFocus
+              value={input.name}
+              onChange={handleInputChange}
             />
           </div>
           <div>
@@ -42,12 +74,14 @@ function LoginDialog() {
               label="Password"
               type="password"
               required
+              value={input.password}
+              onChange={handleInputChange}
             />
           </div>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose}>Cancel</Button>
-          <Button onClick={handleClose}>Login</Button>
+          <Button onClick={onSubmit}>Login</Button>
         </DialogActions>
       </Dialog>
     </form>

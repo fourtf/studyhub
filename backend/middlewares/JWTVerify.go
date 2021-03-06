@@ -3,9 +3,11 @@ package middlewares
 import (
 	"context"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/fourtf/studyhub/models"
+	"github.com/fourtf/studyhub/utils"
 
 	"github.com/dgrijalva/jwt-go"
 )
@@ -14,7 +16,7 @@ import (
 func JWTVerify(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-		var tokenHeader = r.Header.Get("x-access-token") //Grab the token from the header
+		var tokenHeader = r.Header.Get("Token") //Grab the token from the header
 
 		tokenHeader = strings.TrimSpace(tokenHeader)
 
@@ -26,8 +28,8 @@ func JWTVerify(next http.Handler) http.Handler {
 		tk := &models.Token{}
 
 		_, err := jwt.ParseWithClaims(tokenHeader, tk.StandardClaims, func(token *jwt.Token) (interface{}, error) {
-			//TODO: Random string as token generation secret
-			return []byte("secret"), nil
+			utils.LoadEnvironmentVariables()
+			return []byte(os.Getenv("tokenSigningKey")), nil
 		})
 
 		if err != nil {
