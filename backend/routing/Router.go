@@ -7,36 +7,30 @@ import (
 	"github.com/fourtf/studyhub/controllers"
 	"github.com/fourtf/studyhub/middlewares"
 	"github.com/gorilla/mux"
+	"github.com/jinzhu/gorm"
 	"github.com/justinas/nosurf"
 )
 
 var router *mux.Router = mux.NewRouter().StrictSlash(true)
 
 //SetupRouter initializes the router by assigning paths and middlewares
-func SetupRouter() *mux.Router {
-	setupMiddlewares()
-	setupPublicPaths()
-	setupAuthedPaths()
-	return router
-}
-
-func setupMiddlewares() {
+func SetupRouter(db *gorm.DB) *mux.Router {
 	router.Use(commonMiddleware)
-}
 
-func setupPublicPaths() {
+	//Public paths
 	router.Methods("OPTIONS").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {})
 	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("welcome"))
 	})
 
-	router.HandleFunc("/register", controllers.CreateUser).Methods("POST")
-	router.HandleFunc("/login", controllers.Login).Methods("POST")
-}
+	router.HandleFunc("/register", controllers.CreateUser(db)).Methods("POST")
+	router.HandleFunc("/login", controllers.Login(db)).Methods("POST")
 
-func setupAuthedPaths() {
+	//Authed paths
 	authRouter := router.PathPrefix("/auth").Subrouter()
 	authRouter.Use(middlewares.JWTVerify)
+
+	return router
 }
 
 //CSRF-Protection

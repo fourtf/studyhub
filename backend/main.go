@@ -3,20 +3,26 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/fourtf/studyhub/routing"
+	"github.com/fourtf/studyhub/utils"
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 )
 
 func main() {
-	loadEnvironmentVariables()
-	router := routing.SetupRouter()
+	loadDotEnv()
+	db, err := utils.ConnectToDB()
+	if err != nil {
+		os.Exit(1)
+	}
+	router := routing.SetupRouter(db)
 	startServer(router)
 }
 
-func loadEnvironmentVariables() {
+func loadDotEnv() {
 	err := godotenv.Load()
 
 	if err != nil {
