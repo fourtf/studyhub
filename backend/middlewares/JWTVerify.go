@@ -24,18 +24,23 @@ func JWTVerify(next http.Handler) http.Handler {
 			w.WriteHeader(http.StatusForbidden)
 			return
 		}
-		tk := &models.Token{}
+		claims := &models.Claims{}
 
-		_, err := jwt.ParseWithClaims(tokenHeader, tk.StandardClaims, func(token *jwt.Token) (interface{}, error) {
+		token, err := jwt.ParseWithClaims(tokenHeader, claims, func(token *jwt.Token) (interface{}, error) {
 			return []byte(os.Getenv("tokenSigningKey")), nil
 		})
 
 		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		if !token.Valid {
 			w.WriteHeader(http.StatusForbidden)
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), "Token", tk)
+		ctx := context.WithValue(r.Context(), models.UserKey, claims.UserID)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
