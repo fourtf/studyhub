@@ -19,7 +19,6 @@ func CreateUser(db *gorm.DB) http.HandlerFunc {
 		user := &models.User{}
 
 		json.NewDecoder(r.Body).Decode(user)
-		log.Println(user.Name, user.Password, user.Email)
 		pass, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 		if err != nil {
 			log.Println(err)
@@ -72,12 +71,11 @@ func findOne(db *gorm.DB, name, password string) models.AuthResponse {
 	claims := &models.Claims{UserID: user.ID, StandardClaims: jwt.StandardClaims{ExpiresAt: expiresAt}}
 
 	token := jwt.NewWithClaims(jwt.GetSigningMethod("HS256"), claims)
-	tokenString, error := token.SignedString([]byte(os.Getenv("tokenSigningKey")))
-	if error != nil {
-		log.Println(error)
+	tokenString, err := token.SignedString([]byte(os.Getenv("tokenSigningKey")))
+	if err != nil {
+		log.Println(err)
 	}
 
-	var resp = models.AuthResponse{Message: "logged in"}
-	resp.Token = tokenString //Store the token in the response
+	var resp = models.AuthResponse{Message: "logged in", Token: tokenString}
 	return resp
 }

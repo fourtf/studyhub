@@ -1,5 +1,6 @@
 export const fetchJson = async (url: string, requestOptions: RequestInit, object2Send: object): Promise<any> => {
     requestOptions.headers = {...requestOptions.headers, 'Content-Type': 'application/json'}
+    requestOptions = {...requestOptions, body: JSON.stringify(object2Send)}
     const response = await fetch(url, requestOptions)
     return response.json()
 }
