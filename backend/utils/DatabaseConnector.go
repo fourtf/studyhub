@@ -13,8 +13,7 @@ import (
 )
 
 //ConnectToDB establishes a connection to the database and handles errors if the database is not available
-func ConnectToDB() *gorm.DB {
-	LoadEnvironmentVariables()
+func ConnectToDB() (*gorm.DB, error) {
 
 	username := os.Getenv("databaseUser")
 	password := os.Getenv("databasePassword")
@@ -26,14 +25,13 @@ func ConnectToDB() *gorm.DB {
 	db, err := gorm.Open(databaseType, connectionString)
 
 	if err != nil {
-		log.Println("error", err)
-		panic(err)
+		log.Println(err)
+		return nil, err
 	}
 
 	// Migrate the schema
-	db.AutoMigrate(
-		&models.User{})
+	db.AutoMigrate(&models.User{})
 
 	log.Println("Successfully connected to the database!")
-	return db
+	return db, nil
 }

@@ -1,10 +1,12 @@
-export const fetchPublic = async (url: string, requestOptions: RequestInit): Promise<any> => {
+export const fetchJson = async (url: string, requestOptions: RequestInit, object2Send: object): Promise<any> => {
+    requestOptions.headers = {...requestOptions.headers, 'Content-Type': 'application/json'}
     const response = await fetch(url, requestOptions)
     return response.json()
 }
 
-export const fetchAuthed = async (url: string, requestOptions: RequestInit) : Promise<any> => {
-    requestOptions.headers = {...requestOptions.headers, ...{'Token': getCookie("studyhub_token")}}
+export const fetchJsonWithAuth = async (url: string, requestOptions: RequestInit, object2Send: object) : Promise<any> => {
+    requestOptions.headers = {...requestOptions.headers, 'Content-Type': 'application/json' ,'Token': getCookie("studyhub_token")}
+    requestOptions = {...requestOptions, body: JSON.stringify(object2Send)}
     const response = await fetch(url, requestOptions)
     return response.json()
 }

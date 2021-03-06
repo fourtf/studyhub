@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/fourtf/studyhub/models"
-	"github.com/fourtf/studyhub/utils"
 
 	"github.com/dgrijalva/jwt-go"
 )
@@ -28,7 +27,6 @@ func JWTVerify(next http.Handler) http.Handler {
 		tk := &models.Token{}
 
 		_, err := jwt.ParseWithClaims(tokenHeader, tk.StandardClaims, func(token *jwt.Token) (interface{}, error) {
-			utils.LoadEnvironmentVariables()
 			return []byte(os.Getenv("tokenSigningKey")), nil
 		})
 
@@ -37,7 +35,7 @@ func JWTVerify(next http.Handler) http.Handler {
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), "user", tk)
+		ctx := context.WithValue(r.Context(), "Token", tk)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

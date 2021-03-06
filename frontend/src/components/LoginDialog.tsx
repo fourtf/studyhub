@@ -1,10 +1,10 @@
 import { DialogActions, DialogContent, DialogTitle } from '@material-ui/core';
 import { TextField } from '@material-ui/core';
 import { Button, Dialog } from '@material-ui/core';
-import { TokenResponse } from 'models/Token';
+import { TokenResponse } from 'models/Responses';
 import React, { ChangeEvent } from 'react';
 import { useState } from 'react';
-import { fetchPublic } from 'utils/FetchUtils';
+import { fetchJson } from 'utils/FetchUtils';
 
 function LoginDialog() {
   const [open, setOpen] = useState(false);
@@ -17,30 +17,26 @@ function LoginDialog() {
     setOpen(false);
   };
 
-  const [input, setInput] = useState({
-    name: '',
-    password: '',
-  });
+  type Input = {
+    name: string,
+    password: string
+  }
 
-  const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const value = event.currentTarget.value;
-    setInput({
-      ...input,
-      [event.currentTarget.id]: value,
-    });
-  };
+  let input: Input = {name: "", password: ""}
 
-  const requestOptions: RequestInit = {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(input),
-  };
+  const handleInputChange = (key: keyof Input) => {
+    return (event: ChangeEvent<HTMLInputElement>) => {
+      input[key] = event.currentTarget.value
+    }
+  }
 
   const onSubmit = async () => {
-    const responseBody = await fetchPublic('http://localhost:3001/login', requestOptions)
+    const responseBody = await fetchJson('http://localhost:3001/login', {
+      method: 'POST',
+    }, input)
     const { token } = responseBody as TokenResponse;
     let date = new Date();
-    date.setTime(date.getTime() + 365 * 24 * 60 * 60 * 1000); //expires in one year
+    date.setTime(date.getTime() + 365 * 24 * 60 * 60 * 1000); //expires afer one year
     document.cookie = `studyhub_token=${token}; expires=${date.toUTCString()}; secure`;
     setOpen(false)
   };
@@ -59,23 +55,21 @@ function LoginDialog() {
         <DialogContent>
           <div>
             <TextField
-              id="name"
               label="Username"
               type="text"
               required
               autoFocus
               value={input.name}
-              onChange={handleInputChange}
+              onChange={handleInputChange("name")}
             />
           </div>
           <div>
             <TextField
-              id="password"
               label="Password"
               type="password"
               required
               value={input.password}
-              onChange={handleInputChange}
+              onChange={handleInputChange("password")}
             />
           </div>
         </DialogContent>
