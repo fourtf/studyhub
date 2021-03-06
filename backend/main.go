@@ -7,16 +7,21 @@ import (
 
 	"github.com/fourtf/studyhub/routing"
 	"github.com/gorilla/mux"
-	_ "github.com/lib/pq"
-)
-
-const (
-	connectionString string = "user=postgres dbname=postgres password=studyhub_dev"
+	"github.com/joho/godotenv"
 )
 
 func main() {
+	loadEnvironmentVariables()
 	router := routing.SetupRouter()
 	startServer(router)
+}
+
+func loadEnvironmentVariables() {
+	err := godotenv.Load()
+
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
 }
 
 func startServer(router *mux.Router) {

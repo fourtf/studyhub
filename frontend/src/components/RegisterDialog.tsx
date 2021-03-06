@@ -6,6 +6,7 @@ import { Dialog } from '@material-ui/core';
 import { Button } from '@material-ui/core';
 import React, { ChangeEvent } from 'react';
 import { useState } from 'react';
+import { fetchPublic } from 'utils/FetchUtils';
 
 function RegisterDialog() {
 
@@ -35,8 +36,8 @@ function RegisterDialog() {
     body: JSON.stringify(input)
   }
   const onSubmit = async() => {
-    const response = await fetch('http://localhost:3001/register', requestOptions);
-    console.log("Response:\n" + response)
+    const responseBody = await fetchPublic('http://localhost:3001/register', requestOptions);
+    setOpen(false)
   }
 
 

@@ -21,7 +21,7 @@ func SetupRouter() *mux.Router {
 }
 
 func setupMiddlewares() {
-	router.Use(commonMiddleware, nosurfing)
+	router.Use(commonMiddleware)
 }
 
 func setupPublicPaths() {
