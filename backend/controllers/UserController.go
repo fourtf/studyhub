@@ -9,7 +9,6 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/fourtf/studyhub/models"
-	"github.com/fourtf/studyhub/utils"
 	"github.com/jinzhu/gorm"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -58,29 +57,21 @@ func Login(db *gorm.DB) http.HandlerFunc {
 func findOne(db *gorm.DB, name, password string) models.AuthResponse {
 	user := &models.User{}
 
-	if err := db.Where("Name = ?", name).First(user).Error; err != nil {
+	if err := db.Where("name = ?", name).First(user).Error; err != nil {
 		var resp = models.AuthResponse{Message: "User not found"}
 		return resp
 	}
 	expiresAt := time.Now().Add(time.Minute * 100000).Unix()
 
 	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
-	if err != nil && err == bcrypt.ErrMismatchedHashAndPassword { //Password does not match!
+	if err == bcrypt.ErrMismatchedHashAndPassword { //Password does not match!
 		var resp = models.AuthResponse{Message: "Invalid login credentials. Please try again"}
 		return resp
 	}
 
-	tk := &models.Token{
-		UserID: user.ID,
-		Name:   user.Name,
-		Email:  user.Email,
-		StandardClaims: &jwt.StandardClaims{
-			ExpiresAt: expiresAt,
-		},
-	}
+	claims := &models.Claims{UserID: user.ID, StandardClaims: jwt.StandardClaims{ExpiresAt: expiresAt}}
 
-	token := jwt.NewWithClaims(jwt.GetSigningMethod("HS256"), tk.StandardClaims)
-	utils.LoadDotEnv()
+	token := jwt.NewWithClaims(jwt.GetSigningMethod("HS256"), claims)
 	tokenString, error := token.SignedString([]byte(os.Getenv("tokenSigningKey")))
 	if error != nil {
 		log.Println(error)
