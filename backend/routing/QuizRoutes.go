@@ -3,22 +3,35 @@ package routing
 import (
 	"encoding/json"
 	"net/http"
-
-	"github.com/fourtf/studyhub/utils"
 )
 
 type apiResponse struct {
-	Error string      `json:"error"`
-	Data  interface{} `json:"data"`
+	Data interface{} `json:"data"`
 }
 
-type quiz struct {
+const (
+	multipleCoiceKey = "multiple-coice"
+	freeTextKey      = "free-text"
+)
+
+type question struct {
 	ID string `json:"id"`
-	// single | multi | freetext
-	Type     string   `json:"type"`
-	Question string   `json:"question"`
-	Answer   *string  `json:"answer,omitifempty"`
-	Answers  []answer `json:"answers,omitifempty"`
+	// multiple-choice | freetext
+	Type string      `json:"type"`
+	Data interface{} `json:"data"`
+}
+
+// single answer -> radio button
+type multipleCoiceData struct {
+	AllowMultiple bool     `json:"allowMultiple"`
+	Question      string   `json:"question"`
+	Answers       []answer `json:"answers"`
+}
+
+// full test answers -> text input
+type freeTextData struct {
+	Question string `json:"question"`
+	Answer   string `json:"answer"`
 }
 
 type answer struct {
@@ -29,52 +42,58 @@ type answer struct {
 func exampleQuizzes(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(
 		&apiResponse{
-			Error: "",
 			// example data
-			Data: []quiz{
+			Data: []question{
 				{
-					ID:       "1",
-					Type:     "single",
-					Question: "What is love?",
-					Answers: []answer{
-						{
-							Text:      "Baby don't hurt me",
-							IsCorrect: true,
-						},
-						{
-							Text:      "b",
-							IsCorrect: false,
-						},
-						{
-							Text:      "c",
-							IsCorrect: false,
+					ID:   "1",
+					Type: multipleCoiceKey,
+					Data: multipleCoiceData{
+						Question: "What is love?",
+						Answers: []answer{
+							{
+								Text:      "Baby don't hurt me",
+								IsCorrect: true,
+							},
+							{
+								Text:      "b",
+								IsCorrect: false,
+							},
+							{
+								Text:      "c",
+								IsCorrect: false,
+							},
 						},
 					},
 				},
 				{
-					ID:       "2",
-					Type:     "multi",
-					Question: "Who's the boss?",
-					Answers: []answer{
-						{
-							Text:      "Huba",
-							IsCorrect: true,
-						},
-						{
-							Text:      "Huba",
-							IsCorrect: true,
-						},
-						{
-							Text:      "Huba",
-							IsCorrect: true,
+					ID:   "2",
+					Type: multipleCoiceKey,
+					Data: multipleCoiceData{
+						Question:      "Who's the boss?",
+						AllowMultiple: true,
+						Answers: []answer{
+							{
+								Text:      "Huba",
+								IsCorrect: true,
+							},
+							{
+								Text:      "Huba",
+								IsCorrect: true,
+							},
+							{
+								Text:      "Huba",
+								IsCorrect: true,
+							},
 						},
 					},
 				},
 				{
-					ID:       "2",
-					Type:     "freetext",
-					Question: "How are you doing",
-					Answer:   utils.MakeStrPtr("mighty fine"),
+					ID:   "2",
+					Type: freeTextKey,
+					Data: freeTextData{
+						Question: "How are you doing",
+						Answer:   "mighty fine",
+					},
 				},
 			},
 		},
