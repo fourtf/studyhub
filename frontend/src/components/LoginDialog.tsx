@@ -22,22 +22,21 @@ function LoginDialog() {
     password: string
   }
 
-  let input: Input = {name: "", password: ""}
+  const [input, setInput] = useState({name: "", password: ""})
 
   const handleInputChange = (key: keyof Input) => {
     return (event: ChangeEvent<HTMLInputElement>) => {
-      input[key] = event.currentTarget.value
+      setInput({...input, [key]: event.currentTarget.value})
     }
   }
 
   const onSubmit = async () => {
-    const responseBody = await fetchJson('http://localhost:3001/login', {
+    const {token} = await fetchJson<TokenResponse>('http://localhost:3001/login', {
       method: 'POST',
     }, input)
-    const { token } = responseBody as TokenResponse;
     let date = new Date();
     date.setTime(date.getTime() + 365 * 24 * 60 * 60 * 1000); //expires afer one year
-    document.cookie = `studyhub_token=${token}; expires=${date.toUTCString()}; secure`;
+    document.cookie = `studyhub_token=${token}; expires=${date.toUTCString()}`;
     setOpen(false)
   };
 
