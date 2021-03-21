@@ -31,7 +31,7 @@ function RegisterDialog() {
   };
 
   const onSubmit = async () => {
-    if (isValid) {
+    if (isValid.isInputValid) {
       const responseBody = await fetchJson(
         'http://localhost:3001/register',
         {
