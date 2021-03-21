@@ -47,11 +47,6 @@ function RegisterDialog() {
     }
   };
 
-  //ASCII letters and digits, hyphens, underscores and spaces as internal seperators
-  const nameRegEx = new RegExp(/^[A-Za-z0-9]+(?:[ _-][A-Za-z0-9]+)*$/);
-  //anystring@anystring.anystring
-  const emailRegEx = new RegExp(/\S+@\S+\.\S+/);
-
   //minimum eight characters and one special character
   const validatePassword = (password: string): boolean => {
     const includesSpecialCharacter = /[@$!%*#?&]/.test(password)
@@ -59,13 +54,12 @@ function RegisterDialog() {
     return isLongEnough && includesSpecialCharacter;
   };
 
-  type InputChecker = {
-    isNameValid: boolean;
-    isEmailValid: boolean;
-    isPasswordValid: boolean;
-    isInputValid: boolean;
-  };
   const isValid = useMemo(() => {
+    //ASCII letters and digits, hyphens, underscores and spaces as internal seperators
+    const nameRegEx = /^[A-Za-z0-9]+(?:[ _-][A-Za-z0-9]+)*$/;
+    //anystring@anystring.anystring
+    const emailRegEx = /^\S+@\S+\.\S+$/;
+
     const isNameValid = nameRegEx.test(input.name);
     const isEmailValid = emailRegEx.test(input.email);
     const isPasswordValid = validatePassword(input.password);
