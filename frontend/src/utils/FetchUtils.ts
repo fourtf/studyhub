@@ -1,15 +1,13 @@
-export const fetchJson = async (url: string, requestOptions: RequestInit, object2Send: object): Promise<any> => {
+export const fetchJson = async <T>(url: string, requestOptions: RequestInit, object2Send: object): Promise<T> => {
     requestOptions.headers = {...requestOptions.headers, 'Content-Type': 'application/json'}
     requestOptions = {...requestOptions, body: JSON.stringify(object2Send)}
     const response = await fetch(url, requestOptions)
-    return response.json()
+    return response.json() as Promise<T>
 }
 
-export const fetchJsonWithAuth = async (url: string, requestOptions: RequestInit, object2Send: object) : Promise<any> => {
-    requestOptions.headers = {...requestOptions.headers, 'Content-Type': 'application/json' ,'Token': getCookie("studyhub_token")}
-    requestOptions = {...requestOptions, body: JSON.stringify(object2Send)}
-    const response = await fetch(url, requestOptions)
-    return response.json()
+export const fetchJsonWithAuth = async <T>(url: string, requestOptions: RequestInit, object2Send: object) : Promise<T> => {
+    requestOptions.headers = {...requestOptions.headers, 'Token': getCookie("studyhub_token")}
+    return fetchJson(url, requestOptions, object2Send)
 }
 
 const getCookie = (cookieName: string): string  => {

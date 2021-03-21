@@ -2,6 +2,6 @@ package models
 
 //AuthResponse
 type AuthResponse struct {
-	Message string
-	Token   string
+	Message string `json: "message`
+	Token   string `json:"token"`
 }

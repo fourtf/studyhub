@@ -14,7 +14,6 @@ import (
 //SetupRouter initializes the router by assigning paths and middlewares
 func SetupRouter(db *gorm.DB) *mux.Router {
 	router := mux.NewRouter().StrictSlash(true)
-
 	router.Use(commonMiddleware)
 
 	//Public paths

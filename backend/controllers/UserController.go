@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"regexp"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -19,22 +20,27 @@ func CreateUser(db *gorm.DB) http.HandlerFunc {
 		user := &models.User{}
 
 		json.NewDecoder(r.Body).Decode(user)
-		pass, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
-		if err != nil {
-			log.Println(err)
-			json.NewEncoder(w).Encode(err)
+
+		if isUserValid(user) {
+			pass, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+			if err != nil {
+				log.Println(err)
+				json.NewEncoder(w).Encode(err)
+			}
+
+			user.Password = string(pass)
+
+			createdUser := db.Create(user)
+			var errMessage = createdUser.Error
+
+			if createdUser.Error != nil {
+				log.Println(errMessage)
+			}
+			resp := findOne(db, user.Name, user.Password)
+			json.NewEncoder(w).Encode(resp)
+		} else {
+			json.NewEncoder(w).Encode(models.AuthResponse{Message: "Invalid credentials"})
 		}
-
-		user.Password = string(pass)
-
-		createdUser := db.Create(user)
-		var errMessage = createdUser.Error
-
-		if createdUser.Error != nil {
-			log.Println(errMessage)
-		}
-		resp := findOne(db, user.Name, user.Password)
-		json.NewEncoder(w).Encode(resp)
 	}
 }
 
@@ -76,6 +82,25 @@ func findOne(db *gorm.DB, name, password string) models.AuthResponse {
 		log.Println(err)
 	}
 
-	var resp = models.AuthResponse{Message: "logged in", Token: tokenString}
+	var resp = models.AuthResponse{Message: "Logged in", Token: tokenString}
 	return resp
+}
+
+var (
+	nameRegEx         = regexp.MustCompile(`^[A-Za-z0-9]+(?:[ _-][A-Za-z0-9]+)*$`)
+	emailRegEx        = regexp.MustCompile(`^\S+@\S+\.\S+$`)
+	specialCharacters = regexp.MustCompile(`[@$!%*#?&]`)
+)
+
+func isUserValid(user *models.User) bool {
+	var isNameValid = nameRegEx.MatchString(user.Name)
+	var isEmailValid = emailRegEx.MatchString(user.Email)
+	var isPasswordValid = validatePassword(user.Password)
+	return isNameValid && isEmailValid && isPasswordValid
+}
+
+func validatePassword(password string) bool {
+	containsSpecialCharacter := specialCharacters.MatchString(password)
+	isLongEnough := len(password) > 7
+	return isLongEnough && containsSpecialCharacter
 }
