@@ -11,10 +11,9 @@ import (
 	"github.com/justinas/nosurf"
 )
 
-var router *mux.Router = mux.NewRouter().StrictSlash(true)
-
 //SetupRouter initializes the router by assigning paths and middlewares
 func SetupRouter(db *gorm.DB) *mux.Router {
+	router := mux.NewRouter().StrictSlash(true)
 	router.Use(commonMiddleware)
 
 	//Public paths
@@ -25,6 +24,8 @@ func SetupRouter(db *gorm.DB) *mux.Router {
 
 	router.HandleFunc("/register", controllers.CreateUser(db)).Methods("POST")
 	router.HandleFunc("/login", controllers.Login(db)).Methods("POST")
+
+	router.HandleFunc("/quiz/{id}", exampleQuizzes).Methods("GET")
 
 	//Authed paths
 	authRouter := router.PathPrefix("/auth").Subrouter()

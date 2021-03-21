@@ -20,6 +20,7 @@ func CreateUser(db *gorm.DB) http.HandlerFunc {
 		user := &models.User{}
 
 		json.NewDecoder(r.Body).Decode(user)
+
 		if isUserValid(user) {
 			pass, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 			if err != nil {
