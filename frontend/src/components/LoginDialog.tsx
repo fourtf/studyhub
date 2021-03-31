@@ -75,7 +75,7 @@ function LoginDialog() {
           </div>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose}variant="contained">Cancel</Button>
+          <Button onClick={handleClose} variant="contained">Cancel</Button>
           <Button onClick={onSubmit} variant="contained" color="primary">Login</Button>
         </DialogActions>
       </Dialog>
