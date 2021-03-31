@@ -82,7 +82,7 @@ function RegisterDialog() {
         aria-labelledby="login-dialog-title"
       >
         <DialogTitle id="login-dialog-title">Register</DialogTitle>
-        <DialogContent>
+        <DialogContent style={{maxWidth: 350}}>
           <div>
             <TextField
               label="Username"
@@ -92,6 +92,7 @@ function RegisterDialog() {
               value={input.name}
               onChange={handleInputChange('name')}
               error={!isValid.isNameValid}
+              fullWidth
             />
           </div>
           <div>
@@ -102,6 +103,7 @@ function RegisterDialog() {
               value={input.email}
               onChange={handleInputChange('email')}
               error={!isValid.isEmailValid}
+              fullWidth
             />
           </div>
           <div>
@@ -113,12 +115,13 @@ function RegisterDialog() {
               onChange={handleInputChange('password')}
               error={!isValid.isPasswordValid}
               helperText="At least eight characters, including at least one letter and one special character (eg. * or !)"
+              fullWidth
             />
           </div>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose}>Cancel</Button>
-          <Button onClick={onSubmit}>Register</Button>
+          <Button onClick={handleClose} variant="contained">Cancel</Button>
+          <Button onClick={onSubmit} variant="contained" color="primary" disabled={!isValid.isInputValid}>Register</Button>
         </DialogActions>
       </Dialog>
     </form>
