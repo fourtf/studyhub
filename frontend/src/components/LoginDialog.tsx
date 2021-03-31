@@ -51,7 +51,7 @@ function LoginDialog() {
         aria-labelledby="login-dialog-title"
       >
         <DialogTitle id="login-dialog-title">Login</DialogTitle>
-        <DialogContent>
+        <DialogContent style={{width: 350}}>
           <div>
             <TextField
               label="Username"
@@ -60,6 +60,7 @@ function LoginDialog() {
               autoFocus
               value={input.name}
               onChange={handleInputChange("name")}
+              fullWidth
             />
           </div>
           <div>
@@ -69,12 +70,13 @@ function LoginDialog() {
               required
               value={input.password}
               onChange={handleInputChange("password")}
+              fullWidth
             />
           </div>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose}>Cancel</Button>
-          <Button onClick={onSubmit}>Login</Button>
+          <Button onClick={handleClose} variant="contained">Cancel</Button>
+          <Button onClick={onSubmit} variant="contained" color="primary">Login</Button>
         </DialogActions>
       </Dialog>
     </form>
